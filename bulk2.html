@@ -7,13 +7,13 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <style>
     /* Dark Theme Styles */
     .gradient-bg {
       background: #2a2a2a; /* Dark background */
     }
-    
+
     .text-primary {
       color: #e0e0e0; /* Light gray text for primary content */
     }
@@ -41,11 +41,11 @@
     .import-button {
       background: linear-gradient(135deg, #7b68ee 0%, #6a5acd 100%); /* Medium purple gradient */
     }
-    
+
     .import-button:hover {
       box-shadow: 0 5px 15px rgba(123, 104, 238, 0.4);
     }
-    
+
     .process-button {
       background: linear-gradient(135deg, #20b2aa 0%, #008b8b 100%); /* Teal gradient */
     }
@@ -53,7 +53,7 @@
     .process-button:hover {
       box-shadow: 0 5px 15px rgba(32, 178, 170, 0.4);
     }
-    
+
     .download-button {
       background: linear-gradient(135deg, #4b5563 0%, #374151 100%); /* Dark gray gradient */
     }
@@ -61,7 +61,7 @@
     .download-button:hover {
       box-shadow: 0 5px 15px rgba(75, 85, 99, 0.4);
     }
-    
+
     #canvas {
       max-width: 100%;
       height: auto;
@@ -134,42 +134,31 @@
     const downloadAllButton = document.getElementById('downloadAllButton');
     const processingStatus = document.getElementById('processingStatus');
     const processedCountText = document.getElementById('processedCountText');
-    const imageNote = document.getElementById('imageNote'); // Get the note element
+    const imageNote = document.getElementById('imageNote');
 
-    // Get the new radio buttons
     const outputSizeRadios = document.querySelectorAll('input[name="outputSize"]');
 
-    const MAX_DIMENSION_ORIGINAL = 2000; // Maximum width or height for "Original" output
-    const MAX_DIMENSION_COMPRESSED = 1920; // Maximum width or height for "Compressed" output
-    const WEBP_QUALITY_COMPRESSED = 0.7; // Quality for "Compressed" output
+    const MAX_DIMENSION_ORIGINAL = 2000;
+    const MAX_DIMENSION_COMPRESSED = 1920;
+    const WEBP_QUALITY_COMPRESSED = 0.7;
 
-    // Dynamic Logo Sizing Parameters
     const CENTER_LOGO_WIDTH_RATIO = 0.3; // MODIFIED: Made the center logo smaller
     const MAX_CENTER_LOGO_WIDTH = 800;
 
-    const BOTTOM_LOGO_HEIGHT_RATIO_ASSET2 = 0.05;
-    const BOTTOM_LOGO_HEIGHT_RATIO_MAIN = 0.06;
-    const MAX_BOTTOM_LOGO_HEIGHT = 60;
-
-    // Dynamic Padding Parameters
-    const LOGO_BOTTOM_PADDING_RATIO = 0.04;
-    const LOGO_LEFT_PADDING_RATIO = 0.05;
     const MIN_PADDING_PX = 15;
-    const LOGO_SPACING = 10;
 
     let filesToProcess = [];
-    let processedImages = []; // Stores { name: originalFileName, url: dataURL }
+    let processedImages = [];
     let currentProcessedCount = 0;
-    let currentOutputSetting = 'original'; // Default to original
+    let currentOutputSetting = 'original';
 
-    // Load watermark images
     const watermarkLogo = new Image();
-    watermarkLogo.src = 'assets/logo.png'; // Make sure this path is correct!
+    watermarkLogo.src = 'assets/logo.png';
     let watermarkLogoLoaded = false;
     watermarkLogo.onload = () => {
       watermarkLogoLoaded = true;
       console.log("Watermark logo loaded.");
-      drawInitialCanvas(); // Draw initial canvas with message if logos loaded
+      drawInitialCanvas();
     };
     watermarkLogo.onerror = () => {
       console.warn("Watermark logo (assets/logo.png) failed to load. Please ensure the path is correct.");
@@ -178,12 +167,12 @@
     };
 
     const watermarkAsset2 = new Image();
-    watermarkAsset2.src = 'assets/Asset 2@1.png'; // Make sure this path is correct!
+    watermarkAsset2.src = 'assets/Asset 2@1.png';
     let watermarkAsset2Loaded = false;
     watermarkAsset2.onload = () => {
       watermarkAsset2Loaded = true;
       console.log("Watermark Asset 2 loaded.");
-      drawInitialCanvas(); // Draw initial canvas with message if logos loaded
+      drawInitialCanvas();
     };
     watermarkAsset2.onerror = () => {
       console.warn("Watermark Asset 2 (assets/Asset 2@1.png) failed to load. Please ensure the path is correct.");
@@ -207,9 +196,9 @@
 
     function drawInitialCanvas(message = "Upload or Drag & Drop Images Here") {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#3d3d3d'; // Canvas background color
+        ctx.fillStyle = '#3d3d3d';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#a0a0a0'; // Text color
+        ctx.fillStyle = '#a0a0a0';
         ctx.font = "700 24px 'Fira Sans', sans-serif";
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -259,7 +248,7 @@
         resetUI();
         return;
       }
-      
+
       processedImages = [];
       currentProcessedCount = 0;
       processImagesButton.disabled = false;
@@ -273,23 +262,21 @@
         filesToProcess = [];
         processedImages = [];
         currentProcessedCount = 0;
-        imageInput.value = ''; // Clear file input
+        imageInput.value = '';
         processImagesButton.disabled = true;
         processImagesButton.textContent = 'Process Images';
         downloadAllButton.classList.add('hidden');
         processingStatus.classList.add('hidden');
         drawInitialCanvas();
-        // Reset note to default
         imageNote.innerHTML = `<span class="text-purple-300 font-bold">Note:</span> Images will be rendered in their original aspect ratio, scaled to a maximum of 2000px (width or height).`;
-        document.querySelector('input[name="outputSize"][value="original"]').checked = true; // Reset radio button
-        currentOutputSetting = 'original'; // Reset setting
+        document.querySelector('input[name="outputSize"][value="original"]').checked = true;
+        currentOutputSetting = 'original';
     }
 
-    // --- New: Handle output size selection ---
+    // --- Handle output size selection ---
     outputSizeRadios.forEach(radio => {
         radio.addEventListener('change', (event) => {
             currentOutputSetting = event.target.value;
-            // Update the canvas note based on the selection
             if (currentOutputSetting === 'compressed') {
                 imageNote.innerHTML = `
                     <span class="text-purple-300 font-bold">Note:</span> Images will be compressed to a maximum of 1920px (longest edge) with 80% quality.
@@ -316,18 +303,16 @@
         processedCountText.textContent = `Processing 0/${filesToProcess.length}...`;
         drawInitialCanvas("Processing images...");
 
-        // Start processing the first image
         processImage(0);
     }
 
     function processImage(index) {
         if (index >= filesToProcess.length) {
-            // All images processed
             processImagesButton.disabled = false;
             processImagesButton.textContent = 'Processing Complete!';
             downloadAllButton.classList.remove('hidden');
             processedCountText.textContent = `Processed ${processedImages.length}/${filesToProcess.length} images.`;
-            // Display the first processed image as a preview on the main canvas
+
             if (processedImages.length > 0) {
                 const previewImg = new Image();
                 previewImg.onload = () => {
@@ -355,8 +340,8 @@
                 let newHeight = originalHeight;
 
                 let maxDimension;
-                let outputQuality = 1.0; // Default to full quality for original size
-                let outputMimeType = 'image/webp'; // Always output as webp
+                let outputQuality = 1.0;
+                let outputMimeType = 'image/webp';
 
                 if (currentOutputSetting === 'compressed') {
                     maxDimension = MAX_DIMENSION_COMPRESSED;
@@ -365,14 +350,12 @@
                     maxDimension = MAX_DIMENSION_ORIGINAL;
                 }
 
-                // Scale down if dimensions exceed the chosen maxDimension
                 if (originalWidth > maxDimension || originalHeight > maxDimension) {
                     const scaleFactor = Math.min(maxDimension / originalWidth, maxDimension / originalHeight);
                     newWidth = originalWidth * scaleFactor;
                     newHeight = originalHeight * scaleFactor;
                 }
 
-                // Create off-screen canvas for processing each image
                 const offscreenCanvas = document.createElement('canvas');
                 const offscreenCtx = offscreenCanvas.getContext('2d');
                 offscreenCanvas.width = newWidth;
@@ -383,9 +366,8 @@
                 // LAYER 1: Blur Background
                 offscreenCtx.save();
                 offscreenCtx.filter = 'blur(30px)';
-                // The blur image should always "cover" its drawing area within the offscreenCanvas
                 let blurImgW = newWidth, blurImgH = newHeight;
-                const blurImgRatio = originalWidth / originalHeight; // Use original image ratio for blur
+                const blurImgRatio = originalWidth / originalHeight;
                 const offscreenCanvasRatio = offscreenCanvas.width / offscreenCanvas.height;
                 if (blurImgRatio < offscreenCanvasRatio) {
                     blurImgH = offscreenCanvas.width / blurImgRatio;
@@ -398,10 +380,9 @@
                 offscreenCtx.filter = 'none';
                 offscreenCtx.restore();
 
-                // LAYER 2: Main Image (Original Ratio, scaled)
+                // LAYER 2: Main Image
                 offscreenCtx.save();
                 offscreenCtx.drawImage(img, 0, 0, newWidth, newHeight);
-                // Light overall overlay
                 offscreenCtx.fillStyle = 'rgba(0,0,0,0.1)';
                 offscreenCtx.fillRect(0, 0, newWidth, newHeight);
                 offscreenCtx.restore();
@@ -409,66 +390,56 @@
                 // LAYER 3: Center Watermark Logo
                 if (watermarkLogoLoaded) {
                     offscreenCtx.save();
-                    // Calculate dynamic size based on image width, capped by MAX_CENTER_LOGO_WIDTH
                     let centerLogoWidth = newWidth * CENTER_LOGO_WIDTH_RATIO;
                     if (centerLogoWidth > MAX_CENTER_LOGO_WIDTH) {
                         centerLogoWidth = MAX_CENTER_LOGO_WIDTH;
                     }
-                    const centerLogoHeight = watermarkLogo.height * (centerLogoWidth / watermarkLogo.width); // Maintain aspect ratio
-                    
+                    const centerLogoHeight = watermarkLogo.height * (centerLogoWidth / watermarkLogo.width);
+
                     const centerLogoX = (newWidth - centerLogoWidth) / 2;
                     const centerLogoY = (newHeight - centerLogoHeight) / 2;
 
-                    offscreenCtx.globalAlpha = 0.02; // MODIFIED: Made the center logo less visible
+                    offscreenCtx.globalAlpha = 0.02; // MODIFIED: Less visible
                     offscreenCtx.drawImage(watermarkLogo, centerLogoX, centerLogoY, centerLogoWidth, centerLogoHeight);
                     offscreenCtx.restore();
                 }
 
-                // LAYER 4: Watermarks - Reorganized for new positions
-                
-                // Calculate dynamic padding for top and bottom logos
-                const dynamicLeftPadding = Math.max(newWidth * LOGO_LEFT_PADDING_RATIO, MIN_PADDING_PX);
-                const dynamicBottomPadding = Math.max(newHeight * LOGO_BOTTOM_PADDING_RATIO, MIN_PADDING_PX);
+                // LAYER 4: Watermarks
+                const LOGO_SIZE = 100;
+                const PADDING = Math.max(newWidth * 0.05, MIN_PADDING_PX); // Reusing padding for simplicity
 
                 offscreenCtx.save();
-                
-                // NEW: Draw Asset 2@1.png watermark at top-left
+
+                // MODIFIED: Draw Asset 2@1.png watermark at top-right
                 if (watermarkAsset2Loaded) {
-                    const asset2Width = 100; // MODIFIED: Fixed size
-                    const asset2Height = 100; // MODIFIED: Fixed size
-                    const asset2X = dynamicLeftPadding;
-                    const asset2Y = dynamicBottomPadding; // Reusing bottom padding for top padding
+                    const asset2X = newWidth - LOGO_SIZE - PADDING;
+                    const asset2Y = PADDING;
                     offscreenCtx.globalAlpha = 1.0;
-                    offscreenCtx.drawImage(watermarkAsset2, asset2X, asset2Y, asset2Width, asset2Height);
+                    offscreenCtx.drawImage(watermarkAsset2, asset2X, asset2Y, LOGO_SIZE, LOGO_SIZE);
                 }
 
-                // NEW: Draw logo.png watermark at bottom-left
+                // MODIFIED: Draw logo.png watermark at bottom-left
                 if (watermarkLogoLoaded) {
-                    const logoWidth = 100; // MODIFIED: Fixed size
-                    const logoHeight = 100; // MODIFIED: Fixed size
-                    const logoX = dynamicLeftPadding;
-                    const logoY = newHeight - logoHeight - dynamicBottomPadding;
+                    const logoX = PADDING;
+                    const logoY = newHeight - LOGO_SIZE - PADDING;
                     offscreenCtx.globalAlpha = 1.0;
-                    offscreenCtx.drawImage(watermarkLogo, logoX, logoY, logoWidth, logoHeight);
+                    offscreenCtx.drawImage(watermarkLogo, logoX, logoY, LOGO_SIZE, LOGO_SIZE);
                 }
 
                 offscreenCtx.restore();
 
-                // Store the processed image Data URL
                 processedImages.push({ name: file.name, url: offscreenCanvas.toDataURL(outputMimeType, outputQuality) });
 
                 currentProcessedCount++;
                 processedCountText.textContent = `Processing ${currentProcessedCount}/${filesToProcess.length}...`;
 
-                // Process the next image
                 processImage(index + 1);
-
             };
             img.onerror = () => {
                 console.error(`Error loading image: ${file.name}`);
-                currentProcessedCount++; // Still increment count to move forward
+                currentProcessedCount++;
                 processedCountText.textContent = `Processing ${currentProcessedCount}/${filesToProcess.length}... (Error with ${file.name})`;
-                processImage(index + 1); // Move to next
+                processImage(index + 1);
             };
             img.src = e.target.result;
         };
@@ -487,24 +458,22 @@
 
         let downloadCounter = 0;
         processedImages.forEach((image, i) => {
-            setTimeout(() => { // Add a small delay to prevent browser from blocking multiple downloads
+            setTimeout(() => {
                 const link = document.createElement('a');
-                // Ensure a .webp extension for consistency and proper file recognition
-                link.download = `watermarked_${image.name.replace(/\.[^/.]+$/, "")}.webp`; 
+                link.download = `watermarked_${image.name.replace(/\.[^/.]+$/, "")}.webp`;
                 link.href = image.url;
-                document.body.appendChild(link); // Required for Firefox to trigger download
+                document.body.appendChild(link);
                 link.click();
-                document.body.removeChild(link); // Clean up the temporary link element
+                document.body.removeChild(link);
 
                 downloadCounter++;
                 if (downloadCounter === processedImages.length) {
-                    // All downloads initiated
                     alert(`Successfully initiated download for ${processedImages.length} images.`);
                     downloadAllButton.textContent = 'Download All Watermarked';
                     downloadAllButton.disabled = false;
-                    resetUI(); // Reset UI after successful download
+                    resetUI();
                 }
-            }, i * 100); // 100ms delay between each download to help browsers
+            }, i * 100);
         });
     }
 
